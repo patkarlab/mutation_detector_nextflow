@@ -1,0 +1,1 @@
+/home/pipelines/mutation_detector_nextflow/22NGS1327-MY1/gatk38_processing/22NGS1327-MY1.final.bam	600	22NGS1327-MY1
