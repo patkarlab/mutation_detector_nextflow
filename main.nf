@@ -815,6 +815,16 @@ process merge_csvs_amplicon{
 	"""
 }
 
+process combine_replicates {
+	input:
+		val Sample
+	output:
+		val Sample
+    script:
+    """
+    ${params.merge_A1B1} ${params.input}
+    """
+}
 
 workflow AMPLICON {
     Channel
@@ -833,9 +843,8 @@ workflow AMPLICON {
 	combine_output_amplicon(format_VardictOutput_amplicon.out.join(format_LofreqOutput_amplicon.out.join(format_MutectOutput_amplicon.out)))
 	
 	merge_csvs_amplicon(combine_output_amplicon.out)
-	
-	//remove_files(merge_csvs_amplicon.out)
-	
+	combine_replicates (merge_csvs_amplicon.out.collect())
+	//remove_files(combine_replicates.out)	
 }
 
 workflow TRIM {
@@ -855,5 +864,3 @@ workflow TRIM {
 workflow.onComplete {
 	log.info ( workflow.success ? "\n\nDone! Output in the 'Final_Output' directory \n" : "Oops .. something went wrong" )
 }
-
-
