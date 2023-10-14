@@ -822,7 +822,8 @@ process combine_replicates {
 		val Sample
     script:
     """
-    ${params.merge_A1B1} ${params.input}
+	${params.merge_A1B1} ${params.input}
+	${params.delete_samples} ${params.input}	# remove_files 
     """
 }
 
