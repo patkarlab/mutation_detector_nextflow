@@ -198,6 +198,7 @@ process mutect2_run{
 	script:
 	"""
 	${params.java_path}/java -Xmx10G -jar ${params.GATK38_path} -T MuTect2 -R ${params.genome} -I:tumor ${finalBam} -o ${Sample}.mutect2.vcf --dbsnp ${params.site2} -L ${params.bedfile}.bed -nct 25 -contamination 0.02 -mbq 30
+
 	"""
 }
 
@@ -212,6 +213,7 @@ process freebayes_run{
 	script:
 	"""
 	${params.freebayes_path} -f ${params.genome} -b ${finalBam} -t ${params.bedfile}.bed > ${Sample}.freebayes.vcf 	
+
 	"""
 }
 
@@ -226,6 +228,7 @@ process vardict_run{
 	script:
 	"""
 	VarDict -G ${params.genome} -f 0.03 -N ${Sample} -b ${finalBam} -c 1 -S 2 -E 3 -g 4 ${params.bedfile}.bed | sed '1d' | teststrandbias.R | var2vcf_valid.pl -N ${Sample} -E -f 0.03 > ${Sample}.vardict.vcf
+
 	"""
 }
 
@@ -251,6 +254,7 @@ process varscan_run{
 	${params.bcftools_path} index -t ${Sample}.varscan_snp.vcf.gz
 	${params.bcftools_path} index -t ${Sample}.varscan_indel.vcf.gz
 	${params.bcftools_path} concat -a ${Sample}.varscan_snp.vcf.gz ${Sample}.varscan_indel.vcf.gz -o ${Sample}.varscan.vcf
+
 	"""
 }
 
@@ -267,6 +271,7 @@ process lofreq_run{
 	${params.samtools} sort ${Sample}.lofreq.pre.bam > ${Sample}.lofreq.bam
 	${params.lofreq_path} call -b dynamic -C 50 -a 0.00005 -q 30 -Q 30 -m 50 -f ${params.genome} -l ${params.bedfile}.bed -o ${Sample}.lofreq.vcf ${Sample}.lofreq.bam
 	${params.lofreq_path} filter -a 0.01 -i ${Sample}.lofreq.vcf -o ${Sample}.lofreq.filtered.vcf
+
 	"""
 }
 
@@ -288,6 +293,7 @@ process strelka_run{
 	${PWD}/${Sample}/variants/strelka-somatic/runWorkflow.py -m local -j 20
 	
 	${params.bcftools_path} concat -a ${PWD}/${Sample}/variants/strelka-somatic/results/variants/somatic.indels.vcf.gz ${PWD}/${Sample}/variants/strelka-somatic/results/variants/somatic.snvs.vcf.gz -o ${PWD}/${Sample}/variants/${Sample}.strelka-somatic.vcf
+
 	"""
 }
 
@@ -330,6 +336,7 @@ process platypus_run{
 	script:
 	"""
 	python2.7 ${params.platypus_path} callVariants --bamFiles=${finalBams[0]} --refFile=${params.genome} --output=${Sample}.platypus.vcf --nCPU=15 --minFlank=0 --filterDuplicates=0 --maxVariants=6 --minReads=6 --regions=${params.bedfile}_regions.txt
+
 	"""
 }
 
@@ -343,7 +350,6 @@ process coverage {
 	"""
 	${params.bedtools} bamtobed -i ${finalBams[0]} > ${Sample}.bed
 	${params.bedtools} coverage -counts -a ${params.bedfile}.bed -b ${Sample}.bed > ${Sample}.counts.bed
-	
 	"""
 }
 
@@ -490,7 +496,12 @@ process format_combined {
 	script:
 	"""
 	mkdir -p ${PWD}/${Sample}/Annovar_Modified
-	python3.6 ${params.format_combined_script} ${PWD}/${Sample}/ANNOVAR/${hg19_multianno} ${PWD}/${Sample}/Annovar_Modified/${Sample}.combined.csv
+
+	if [ -s ${PWD}/${Sample}/ANNOVAR/${hg19_multianno} ]; then 
+		python3.6 ${params.format_combined_script} ${PWD}/${Sample}/ANNOVAR/${hg19_multianno} ${PWD}/${Sample}/Annovar_Modified/${Sample}.combined.csv
+	else
+		touch ${PWD}/${Sample}/Annovar_Modified/${Sample}.combined.csv
+	fi
 	"""
 }
 
