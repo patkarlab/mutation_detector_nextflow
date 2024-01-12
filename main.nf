@@ -258,6 +258,23 @@ process varscan_run{
 	"""
 }
 
+process Annovar{
+	publishDir "$PWD/Final_Output/${Sample}/", mode: 'copy', pattern: '*.varscan_.csv'
+	input:
+		tuple val (Sample), file(varscanVcf)
+	output:
+		 tuple val (Sample), file ("*.hg19_multianno.csv"), file("*.varscan_.csv")
+	script:
+	"""
+	perl ${params.annovarLatest_path}/convert2annovar.pl -format vcf4 ${varscanVcf}  --outfile ${Sample}.varscan.avinput --withzyg --includeinfo
+	perl ${params.annovarLatest_path}/table_annovar.pl ${Sample}.varscan.avinput --out ${Sample}.varscan --remove --protocol refGene,cytoBand,cosmic84,popfreq_all_20150413,avsnp150,intervar_20180118,1000g2015aug_all,clinvar_20170905 --operation g,r,f,f,f,f,f,f --buildver hg19 --nastring '-1' --otherinfo --csvout --thread 10 ${params.annovarLatest_path}/humandb/ --xreffile ${params.annovarLatest_path}/example/gene_fullxref.txt
+
+	python3 ${PWD}/scripts/somaticseqoutput-format_v2_varscan.py ${Sample}.varscan.hg19_multianno.csv ${Sample}.varscan_.csv
+	#cp ${Sample}.varscan_.csv $PWD/Final_Output/${Sample}/
+	sleep 5s
+	"""
+}
+
 process lofreq_run{
 	publishDir "$PWD/${Sample}/variants/", mode: 'copy', pattern: '*.lofreq.filtered.vcf'
 	
@@ -532,7 +549,7 @@ process Final_Output {
 process remove_files{
 	errorStrategy 'ignore'
 	input:
-		val (Sample)
+		tuple val (Sample)
 	script:
 	"""
 	rm -rf ${PWD}/${Sample}/
@@ -872,6 +889,26 @@ workflow TRIM {
 	
 }
 
+workflow DICER {
+	Channel
+		.fromPath(params.input)
+		.splitCsv(header:false)
+		.flatten()
+		.map{ it }
+		.set { samples_ch }
+	
+	main:
+	trimming_fastq_mcf(samples_ch) | gzip | pair_assembly_pear | mapping_reads | sam_conversion
+	RealignerTargetCreator(sam_conversion.out)
+	IndelRealigner(RealignerTargetCreator.out.join(sam_conversion.out)) | BaseRecalibrator
+	PrintReads(IndelRealigner.out.join(BaseRecalibrator.out)) | generatefinalbam
+	varscan_run(generatefinalbam.out)
+	coverview_run(generatefinalbam.out)
+	coverview_report(coverview_run.out.toList())
+	Annovar(varscan_run.out)
+	remove_files(Annovar.out)
+
+}
 
 workflow.onComplete {
 	log.info ( workflow.success ? "\n\nDone! Output in the 'Final_Output' directory \n" : "Oops .. something went wrong" )
