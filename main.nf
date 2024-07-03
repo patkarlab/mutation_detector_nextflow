@@ -873,7 +873,7 @@ workflow AMPLICON {
 	
 	merge_csvs_amplicon(combine_output_amplicon.out)
 	combine_replicates (merge_csvs_amplicon.out.collect())
-	//remove_files(combine_replicates.out)	
+	//remove_files(merge_csvs_amplicon.out)	
 }
 
 workflow TRIM {
