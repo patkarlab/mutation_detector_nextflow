@@ -1,0 +1,28 @@
+Panel name	Bedfile	No.ofprobes
+CNVsmall + newmyeloid	CNV_Small_hg19_newmyeloid_sortd.bed	5724
+CNVsmall 	CNV_Small_hg19_sortd.bed	3072
+ALP as of 17th Oct23	Leukemia_Panel_Myeloid_2023_Feb_hg37_sortd.bed	1283
+Lung panel	lung_panel_egfr_kras_tp53_sortd.bed	37
+Myeloma combined (old)	myeloma_combined_sortd.bed	4168
+Myeloma combined (new)	myeloma_combined_tp53_nras_kras_sortd.bed	4188
+Tall RNA	TALL_RNA_hg19_UCSC_sortd.bed	440
+TALL DNA	Targets-XGEN_TALL_DNA_hg19_sortd.bed	286
+IDT-MRD	04243058_MRD_Panel_V1_final_sorted.bed	281
+	04243058_MRD_Panel_V1_sorted.bed	281
+ALP (old)	06112021_Leukemia_Panel_sorted.bed	9365
+CNV panel + ALP	ALP_CNV_backbone_sorted.bed	18475
+Twistmyeloid	Leukemia_Bed_file_MYFU_grch37_sorted.bed	3868
+Twistlymphoid	Leukemia_Bedfile_ALL_grch37hglft_genome_ucsc.bed	987
+CNVpanel 	xgen-human-cnv-backbone-hyb-panel-probes.bed	9110
+	myeloidrp_coordinates_file.bed	881
+	myeloid_coordinates_file.bed	1066
+	newmyeloid.bed	2652
+"CNV small +tp53,nras,kras"	CNV_Small_hg19_tp53_nras_kras_sortd.bed	3092
+MM panel transloacation	MMPanel_translocation_sortd.bed	372
+MM panel IGVH	MMPanel_IGVH_Bed_sortd.bed	724
+New AML MRD	AML_MRD_Exons_sortd.bed	94
+New AML MRD	Probes-XGEN_npm1_cebpa_phf6_sortd.bed	199
+ALL	ALL_coordinates_byexons.bed	406
+KDM	ablnew.bed	7
+CLL	cll_coordinates.bed	320
+smmips_MRD	MRD_New_pool_may22	84
