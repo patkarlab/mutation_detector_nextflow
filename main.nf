@@ -99,6 +99,19 @@ process mapping_reads{
 	"""
 }
 
+process MAP_BWA {
+	maxForks 15
+	publishDir "${PWD}/${Sample}/mapped_reads/", mode: 'copy'
+	input:
+		tuple val (Sample), file (pairAssembled)
+	output:
+		tuple val (Sample), file ("*.sam")
+	script:
+	"""
+	bwa mem -R "@RG\\tID:AML\\tPL:ILLUMINA\\tLB:LIB-MIPS\\tSM:${Sample}\\tPI:200" -M -t 20 ${params.genome} ${pairAssembled[0]} ${pairAssembled[2]} > ${Sample}.sam
+	"""
+}
+
 process sam_conversion{
 	maxForks 15
 	publishDir "$PWD/${Sample}/mapped_reads/", mode: 'copy', pattern: '*.fxd_sorted.bam'
@@ -165,6 +178,25 @@ process PrintReads{
 	script:
 	"""
 	${params.java_path}/java -Xmx8G -jar ${params.GATK38_path} -T PrintReads -R ${params.genome} -I ${realignedBam} --BQSR ${recal_dataTable} -o ${Sample}.aligned.recalibrated.bam
+	"""
+}
+
+process minimap_getitd {
+	publishDir "$PWD/${Sample}/", mode: 'copy', pattern: '*_getitd'
+	publishDir "$PWD/Final_Output/${Sample}/", mode: 'copy', pattern: '*_getitd'
+	input:
+			val Sample
+	output:
+			path "*_getitd"
+	script:
+	"""
+	minimap2 -ax sr ${params.genome_minimap_getitd} ${params.sequences}/${Sample}_*R1_*.fastq.gz ${params.sequences}/${Sample}_*R2_*.fastq.gz > ${Sample}.sam
+	${params.samtools} view -b -h ${Sample}.sam -o ${Sample}.bam
+	${params.samtools} sort ${Sample}.bam -o ${Sample}.sorted.bam
+	${params.samtools} index ${Sample}.sorted.bam
+	${params.samtools} view ${Sample}.sorted.bam -b -h chr13 > ${Sample}.chr13.bam
+	${params.bedtools} bamtofastq -i ${Sample}.chr13.bam -fq ${Sample}_chr13.fastq
+	python ${params.get_itd_path}/getitd.py -reference ${params.get_itd_path}/anno/amplicon.txt -anno ${params.get_itd_path}/anno/amplicon_kayser.tsv -forward_adapter AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATCT -reverse_adapter CAAGCAGAAGACGGCATACGAGATCGGTCTCGGCATTCCTGCTGAACCGCTCTTCCGATCT -nkern 8 ${Sample} ${Sample}_chr13.fastq
 	"""
 }
 
@@ -848,11 +880,11 @@ process combine_replicates {
 		val Sample
 	output:
 		val Sample
-    script:
-    """
+	script:
+	"""
 	${params.merge_A1B1} ${params.input}
 	${params.delete_samples} ${params.input}	# remove_files 
-    """
+	"""
 }
 
 workflow AMPLICON {
@@ -865,6 +897,7 @@ workflow AMPLICON {
 	
 	main:
 	trimming_trimmomatic(Sample) | pair_assembly_flash | mapping_reads | samtools_sort
+	// trimming_trimmomatic(Sample) | MAP_BWA | samtools_sort
 	coverage(samtools_sort.out)
 	vardict_run_amplicon(samtools_sort.out) | format_VardictOutput_amplicon
 	lofreq_run_amplicon(samtools_sort.out) | format_LofreqOutput_amplicon
@@ -902,6 +935,7 @@ workflow DICER {
 	RealignerTargetCreator(sam_conversion.out)
 	IndelRealigner(RealignerTargetCreator.out.join(sam_conversion.out)) | BaseRecalibrator
 	PrintReads(IndelRealigner.out.join(BaseRecalibrator.out)) | generatefinalbam
+	minimap_getitd(samples_ch)
 	varscan_run(generatefinalbam.out)
 	coverview_run(generatefinalbam.out)
 	coverview_report(coverview_run.out.toList())

@@ -57,5 +57,5 @@ df3.to_excel(excel_writer, sheet_name='A1B1', index=False)
 #df2.to_excel(excel_writer, sheet_name='B1', index=False)
 #df3.to_excel(excel_writer, sheet_name='A1B1Common', index=False)
 
-excel_writer.save()
+excel_writer.close()
 
