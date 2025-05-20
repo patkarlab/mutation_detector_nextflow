@@ -2,3 +2,7 @@ Final_Output*
 work/
 .nextflow.log*
 sample_list.csv
+sequences/
+.nextflow/
+.nextflow.pid
+*.log
