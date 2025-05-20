@@ -6,3 +6,4 @@ sequences/
 .nextflow/
 .nextflow.pid
 *.log
+Coverview/
