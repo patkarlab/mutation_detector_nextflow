@@ -17,27 +17,15 @@ process COVERAGE {
 }
 
 process COVERVIEW {
-	executor="local"
+	tag "${Sample}"
+	publishDir "${params.output}/${Sample}/", mode: 'copy', pattern: '*.coverview_regions.csv'
 	input:
 		tuple val (Sample), file(finalBam), file(finalBamBai)
 	output:
-		tuple val (Sample), ${Sample}.coverview_regions.csv
+		tuple val (Sample), file("${Sample}.coverview_regions.csv")
 	script:
 	"""
 	${params.coverview_path}/coverview -i ${finalBam} -b ${params.bedfile}.bed -c ${params.coverview_path}/config/config.txt -o ${Sample}.coverview
 	python3 ${params.coverview_script_path} ${Sample}.coverview_regions.txt ${Sample}.coverview_regions.csv
-	"""
-}
-
-process COVERVIEW_REPORT {
-	errorStrategy 'ignore'
-	executor="local"
-	input:
-		val (Sample)
-	output:
-		val Sample
-	script:
-	"""
-	python3.6 ${params.coverview_report_path} ${PWD}/Coverview/ ${PWD}/Final_Output/
 	"""
 }

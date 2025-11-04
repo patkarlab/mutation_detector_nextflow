@@ -1,10 +1,11 @@
 #!/usr/bin/env nextflow
 
-process VARSCAN{	
+process VARSCAN{
+	tag "${Sample}"	
 	input:
 		tuple val (Sample), file(finalBam), file (finalBamBai)
 	output:
-		tuple val(Sample), file ("*.varscan_snp.vcf"),  file ("*.varscan_indel.vcf"), file("*.varscan.vcf")
+		tuple val(Sample), file("*.varscan.vcf")
 		
 	script:
 	"""

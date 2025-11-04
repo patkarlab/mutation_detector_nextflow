@@ -12,17 +12,26 @@ Sequences in:${params.sequences}
 // file paths
 bed_file = file("${params.bedfile}.bed", checkIfExists: true )
 genome_loc = file("${params.genome}", checkIfExists: true )
+genome_dir = file("${genome_loc.parent}", checkIfExists: true)
+genome_fasta = file("${genome_loc.name}")
 known_indels = file("${params.site1}", checkIfExists: true )
 known_snps_1 = file("${params.site2}", checkIfExists: true )
 known_snps_2 = file("${params.site3}", checkIfExists: true )
 minimap_genome = file("${params.genome_minimap_getitd}", checkIfExists: true )
 
+
 include { FASTQTOBAM } from '/home/pipelines/NextSeq_mutation_detector_leukemia/modules/processes.nf'
-include { COVERAGE } from './modules/coverage.nf'
+include { COVERAGE; COVERVIEW } from './modules/coverage.nf'
 include { VARDICT; FORMAT_VARDICT } from './modules/vardict.nf'
 include { LOFREQ; FORMAT_LOFREQ } from './modules/lofreq.nf'
 include { MUTECT; FORMAT_MUTECT } from './modules/mutect.nf'
+include { VARSCAN } from './modules/varscan.nf'
 include { COMBINE_OUTPUT; MERGE_CSVS; COMBINE_REPLICATES } from './modules/format.nf'
+include { REALIGNER_TARGET_CREATOR; INDEL_REALIGNER; BASE_RECALIBRATOR; PRINT_READS } from './modules/gatk.nf'
+include { MINIMAP_GETITD } from './modules/itd.nf'
+include { ANNOVAR } from './modules/annovar.nf'
+include { GENERATE_FINAL_BAM } from './modules/sort.nf'
+
 
 workflow KDM {
 	Channel.fromPath(params.input)
@@ -67,16 +76,14 @@ workflow DICER {
 		.set { bam_ch }
 	main:
 	final_bams_ch = FASTQTOBAM(bam_ch)	
-	REALIGNER_TARGET_CREATOR(final_bams_ch, genome_loc, known_indels)
-	INDEL_REALIGNER(REALIGNER_TARGET_CREATOR.out.join(final_bams_ch), genome_loc, known_indels)
-	BASE_RECALIBRATOR(INDEL_REALIGNER.out, genome_loc, known_snps_1, known_snps_2)
-	PRINT_READS(INDEL_REALIGNER.out.join(BASE_RECALIBRATOR.out), genome_loc) | GENERATE_FINAL_BAM
-	MINIMAP_GETITD(bam_ch)
+	REALIGNER_TARGET_CREATOR(final_bams_ch, genome_dir, genome_fasta, known_indels)
+	INDEL_REALIGNER(REALIGNER_TARGET_CREATOR.out.join(final_bams_ch), genome_dir, genome_fasta, known_indels)
+	BASE_RECALIBRATOR(INDEL_REALIGNER.out, genome_dir, genome_fasta, known_snps_1, known_snps_2)
+	PRINT_READS(INDEL_REALIGNER.out.join(BASE_RECALIBRATOR.out), genome_dir, genome_fasta) | GENERATE_FINAL_BAM
+	MINIMAP_GETITD(bam_ch, minimap_genome)
 	VARSCAN(GENERATE_FINAL_BAM.out)
 	COVERVIEW(GENERATE_FINAL_BAM.out)
-	COVERVIEW_REPORT(COVERVIEW.out.toList())
 	ANNOVAR(VARSCAN.out)
-	REMOVE_FILES(ANNOVAR.out)
 }
 
 

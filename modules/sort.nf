@@ -1,6 +1,7 @@
 #!/usr/bin/env nextflow
 
 process GENERATE_FINAL_BAM{
+	tag "${Sample}"
 	publishDir "${params.output}/${Sample}/", mode: 'copy', pattern: '*.final.bam'
 	publishDir "${params.output}/${Sample}/", mode: 'copy', pattern: '*.final.bam.bai'
 	
