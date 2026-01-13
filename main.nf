@@ -20,7 +20,7 @@ known_snps_2 = file("${params.site3}", checkIfExists: true )
 minimap_genome = file("${params.genome_minimap_getitd}", checkIfExists: true )
 
 
-include { FASTQTOBAM } from '/home/pipelines/NextSeq_mutation_detector_leukemia/modules/processes.nf'
+include { FASTQTOBAM } from './workflows/fastq_bam.nf'
 include { COVERAGE; COVERVIEW } from './modules/coverage.nf'
 include { VARDICT; FORMAT_VARDICT } from './modules/vardict.nf'
 include { LOFREQ; FORMAT_LOFREQ } from './modules/lofreq.nf'
