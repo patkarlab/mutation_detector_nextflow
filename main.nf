@@ -49,11 +49,11 @@ workflow KDM {
 		}
 		.set { bam_ch }
 	main:
-	final_bams_ch = FASTQTOBAM(bam_ch)
-	COVERAGE(final_bams_ch)
-	VARDICT(final_bams_ch) | FORMAT_VARDICT
-	LOFREQ(final_bams_ch) | FORMAT_LOFREQ
-	MUTECT(final_bams_ch) | FORMAT_MUTECT
+	kdm_bams_ch = FASTQTOBAM(bam_ch)
+	COVERAGE(kdm_bams_ch.final_bams_ch)
+	VARDICT(kdm_bams_ch.final_bams_ch) | FORMAT_VARDICT
+	LOFREQ(kdm_bams_ch.final_bams_ch) | FORMAT_LOFREQ
+	MUTECT(kdm_bams_ch.final_bams_ch) | FORMAT_MUTECT
 	COMBINE_OUTPUT(FORMAT_VARDICT.out.join(FORMAT_MUTECT.out.join(FORMAT_LOFREQ.out)))
 	MERGE_CSVS(COMBINE_OUTPUT.out.join(COVERAGE.out.cov))
 	COMBINE_REPLICATES(MERGE_CSVS.out.collect())
@@ -75,9 +75,9 @@ workflow DICER {
 		}
 		.set { bam_ch }
 	main:
-	final_bams_ch = FASTQTOBAM(bam_ch)	
-	REALIGNER_TARGET_CREATOR(final_bams_ch, genome_dir, genome_fasta, known_indels)
-	INDEL_REALIGNER(REALIGNER_TARGET_CREATOR.out.join(final_bams_ch), genome_dir, genome_fasta, known_indels)
+	dicer_bams_ch = FASTQTOBAM(bam_ch)	
+	REALIGNER_TARGET_CREATOR(dicer_bams_ch.final_bams_ch, genome_dir, genome_fasta, known_indels)
+	INDEL_REALIGNER(REALIGNER_TARGET_CREATOR.out.join(dicer_bams_ch.final_bams_ch), genome_dir, genome_fasta, known_indels)
 	BASE_RECALIBRATOR(INDEL_REALIGNER.out, genome_dir, genome_fasta, known_snps_1, known_snps_2)
 	PRINT_READS(INDEL_REALIGNER.out.join(BASE_RECALIBRATOR.out), genome_dir, genome_fasta) | GENERATE_FINAL_BAM
 	MINIMAP_GETITD(bam_ch, minimap_genome)
