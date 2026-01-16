@@ -10,7 +10,7 @@ Sequences in:${params.sequences}
 """
 
 // file paths
-bed_file = file("${params.bedfile}.bed", checkIfExists: true )
+bed_file = file("${params.bedfile}", checkIfExists: true )
 genome_loc = file("${params.genome}", checkIfExists: true )
 genome_dir = file("${genome_loc.parent}", checkIfExists: true)
 genome_fasta = file("${genome_loc.name}")
@@ -20,7 +20,7 @@ known_snps_2 = file("${params.site3}", checkIfExists: true )
 minimap_genome = file("${params.genome_minimap_getitd}", checkIfExists: true )
 
 
-include { FASTQTOBAM } from './workflows/fastq_bam.nf'
+include { FASTQ_TO_BAM } from './workflows/fastq_bam.nf'
 include { COVERAGE; COVERVIEW } from './modules/coverage.nf'
 include { VARDICT; FORMAT_VARDICT } from './modules/vardict.nf'
 include { LOFREQ; FORMAT_LOFREQ } from './modules/lofreq.nf'
@@ -29,7 +29,7 @@ include { VARSCAN } from './modules/varscan.nf'
 include { COMBINE_OUTPUT; MERGE_CSVS; COMBINE_REPLICATES } from './modules/format.nf'
 include { REALIGNER_TARGET_CREATOR; INDEL_REALIGNER; BASE_RECALIBRATOR; PRINT_READS } from './modules/gatk.nf'
 include { MINIMAP_GETITD } from './modules/itd.nf'
-include { ANNOVAR } from './modules/annovar.nf'
+include { ANNOVAR as ANNOVAR_VARDICT; ANNOVAR as ANNOVAR_LOFREQ; ANNOVAR as ANNOVAR_MUTECT; ANNOVAR as ANNOVAR_VARSCAN } from './modules/annovar.nf'
 include { GENERATE_FINAL_BAM } from './modules/sort.nf'
 
 
@@ -49,42 +49,42 @@ workflow KDM {
 		}
 		.set { bam_ch }
 	main:
-	kdm_bams_ch = FASTQTOBAM(bam_ch)
-	COVERAGE(kdm_bams_ch.final_bams_ch)
-	VARDICT(kdm_bams_ch.final_bams_ch) | FORMAT_VARDICT
-	LOFREQ(kdm_bams_ch.final_bams_ch) | FORMAT_LOFREQ
-	MUTECT(kdm_bams_ch.final_bams_ch) | FORMAT_MUTECT
-	COMBINE_OUTPUT(FORMAT_VARDICT.out.join(FORMAT_MUTECT.out.join(FORMAT_LOFREQ.out)))
-	MERGE_CSVS(COMBINE_OUTPUT.out.join(COVERAGE.out.cov))
-	COMBINE_REPLICATES(MERGE_CSVS.out.collect())
+	kdm_bams_ch = FASTQ_TO_BAM(bam_ch)
+	COVERAGE(kdm_bams_ch.final_bams_ch, bed_file )
+	VARDICT(kdm_bams_ch.final_bams_ch, bed_file, genome_file, index_files) | ANNOVAR_VARDICT | FORMAT_VARDICT
+	// LOFREQ(kdm_bams_ch.final_bams_ch) | ANNOVAR_LOFREQ | FORMAT_LOFREQ
+	// MUTECT(kdm_bams_ch.final_bams_ch) | ANNOVAR_MUTECT | FORMAT_MUTECT
+	// COMBINE_OUTPUT(FORMAT_VARDICT.out.join(FORMAT_MUTECT.out.join(FORMAT_LOFREQ.out)))
+	// MERGE_CSVS(COMBINE_OUTPUT.out.join(COVERAGE.out.cov))
+	// COMBINE_REPLICATES(MERGE_CSVS.out.collect())
 }
 
-workflow DICER {
-	Channel.fromPath(params.input)
-		.splitCsv(header:false)
-		.map { row ->
-			def sample = row[0].trim()
-			def r1 = file("${params.sequences}/${sample}_S*_R1_*.fastq.gz", checkIfExists: false)
-			def r2 = file("${params.sequences}/${sample}_S*_R2_*.fastq.gz", checkIfExists: false)
+// workflow DICER {
+// 	Channel.fromPath(params.input)
+// 		.splitCsv(header:false)
+// 		.map { row ->
+// 			def sample = row[0].trim()
+// 			def r1 = file("${params.sequences}/${sample}_S*_R1_*.fastq.gz", checkIfExists: false)
+// 			def r2 = file("${params.sequences}/${sample}_S*_R2_*.fastq.gz", checkIfExists: false)
 
-			if (!r1 && !r2) {
-				r1 = file("${params.sequences}/${sample}*_R1.fastq.gz", checkIfExists: false)
-				r2 = file("${params.sequences}/${sample}*_R2.fastq.gz", checkIfExists: false)
-			}
-			tuple(sample, r1, r2)
-		}
-		.set { bam_ch }
-	main:
-	dicer_bams_ch = FASTQTOBAM(bam_ch)	
-	REALIGNER_TARGET_CREATOR(dicer_bams_ch.final_bams_ch, genome_dir, genome_fasta, known_indels)
-	INDEL_REALIGNER(REALIGNER_TARGET_CREATOR.out.join(dicer_bams_ch.final_bams_ch), genome_dir, genome_fasta, known_indels)
-	BASE_RECALIBRATOR(INDEL_REALIGNER.out, genome_dir, genome_fasta, known_snps_1, known_snps_2)
-	PRINT_READS(INDEL_REALIGNER.out.join(BASE_RECALIBRATOR.out), genome_dir, genome_fasta) | GENERATE_FINAL_BAM
-	MINIMAP_GETITD(bam_ch, minimap_genome)
-	VARSCAN(GENERATE_FINAL_BAM.out)
-	COVERVIEW(GENERATE_FINAL_BAM.out)
-	ANNOVAR(VARSCAN.out)
-}
+// 			if (!r1 && !r2) {
+// 				r1 = file("${params.sequences}/${sample}*_R1.fastq.gz", checkIfExists: false)
+// 				r2 = file("${params.sequences}/${sample}*_R2.fastq.gz", checkIfExists: false)
+// 			}
+// 			tuple(sample, r1, r2)
+// 		}
+// 		.set { bam_ch }
+// 	main:
+// 	dicer_bams_ch = FASTQTOBAM(bam_ch)	
+// 	REALIGNER_TARGET_CREATOR(dicer_bams_ch.final_bams_ch, genome_dir, genome_fasta, known_indels)
+// 	INDEL_REALIGNER(REALIGNER_TARGET_CREATOR.out.join(dicer_bams_ch.final_bams_ch), genome_dir, genome_fasta, known_indels)
+// 	BASE_RECALIBRATOR(INDEL_REALIGNER.out, genome_dir, genome_fasta, known_snps_1, known_snps_2)
+// 	PRINT_READS(INDEL_REALIGNER.out.join(BASE_RECALIBRATOR.out), genome_dir, genome_fasta) | GENERATE_FINAL_BAM
+// 	MINIMAP_GETITD(bam_ch, minimap_genome)
+// 	VARSCAN(GENERATE_FINAL_BAM.out)
+// 	COVERVIEW(GENERATE_FINAL_BAM.out)
+// 	ANNOVAR(VARSCAN.out)
+// }
 
 
 workflow.onComplete {

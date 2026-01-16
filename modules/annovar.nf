@@ -4,15 +4,16 @@ process ANNOVAR{
 	tag "${Sample}"
 	publishDir "${params.output}/${Sample}/", mode: 'copy', pattern: '*.varscan_.csv'
 	input:
-		tuple val (Sample), file(varscanVcf)
+		tuple val (Sample), path(Vcf)
+		val(variant_caller)
 	output:
-		 tuple val (Sample), file ("*.hg19_multianno.csv"), file("*.varscan_.csv")
+		 tuple val (Sample), path ("${Sample}_${variant_caller}.out.hg19_multianno.csv"), file("*.varscan_.csv")
 	script:
 	"""
-	perl ${params.annovarLatest_path}/convert2annovar.pl -format vcf4 ${varscanVcf}  --outfile ${Sample}.varscan.avinput --withzyg --includeinfo
-	perl ${params.annovarLatest_path}/table_annovar.pl ${Sample}.varscan.avinput --out ${Sample}.varscan --remove --protocol refGene,cytoBand,cosmic84,popfreq_all_20150413,avsnp150,intervar_20180118,1000g2015aug_all,clinvar_20170905 --operation g,r,f,f,f,f,f,f --buildver hg19 --nastring '-1' --otherinfo --csvout --thread ${task.cpus} ${params.annovarLatest_path}/humandb/ --xreffile ${params.annovarLatest_path}/example/gene_fullxref.txt
+	convert2annovar.pl -format vcf4 ${Vcf}  --outfile ${Sample}_${variant_caller}.avinput --withzyg --includeinfo
+	table_annovar.pl ${Sample}.avinput --out ${Sample}_${variant_caller}.out --remove --protocol refGene,cytoBand,cosmic84,popfreq_all_20150413,avsnp150,intervar_20180118,1000g2015aug_all,clinvar_20170905 --operation g,r,f,f,f,f,f,f --buildver hg19 --nastring '-1' --otherinfo --csvout --thread ${task.cpus} databases/humandb/ --xreffile databases/example/gene_fullxref.txt
 
-	somaticseqoutput-format_v2_varscan.py ${Sample}.varscan.hg19_multianno.csv ${Sample}.varscan_.csv
+	#somaticseqoutput-format_v2_varscan.py ${Sample}.varscan.hg19_multianno.csv ${Sample}.varscan_.csv
 	sleep 5s
 	"""
 }
