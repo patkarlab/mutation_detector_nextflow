@@ -11,7 +11,7 @@ known_INDELS = file("${params.site2}", checkIfExists: true)
 known_INDELS_index = file("${params.site2_idx}", checkIfExists: true)
 index_files = file("${params.genome_dir}/${params.ind_files}.*")
 
-include { TRIM; MAPBAM; MARK_DUPS; BQSR; APPLY_BQSR; ALIGNMENT_METRICS; INSERT_SIZE_METRICS} from '../modules/bam.nf'
+include { TRIM; MAPBAM; MARK_DUPS; BQSR; APPLY_BQSR; ALIGNMENT_METRICS; INSERT_SIZE_METRICS} from '../modules/fastq_to_bam/bam.nf'
 
 workflow FASTQ_TO_BAM{
 	take:
