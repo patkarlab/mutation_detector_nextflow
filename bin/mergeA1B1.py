@@ -86,7 +86,7 @@ def main(args):
                     )
 
                     if 'VAF_1' in merged_df.columns and 'VAF_2' in merged_df.columns:
-                        extracted_diff = merged_df[merged_df['VAF_1'] != merged_df['VAF_2']]
+                        extracted_diff = merged_df
 
                         selected_columns = merge_keys.copy()
                         for col in comparison_cols:

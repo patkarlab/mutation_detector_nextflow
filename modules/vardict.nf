@@ -23,6 +23,6 @@ process FORMAT_VARDICT {
 		tuple val (Sample), path ("${Sample}_vardict.csv")
 	script:
 	"""
-	python3 ${params.formatVardict_script_path} ${multiannoFile} ${Sample} ./
+	vardictoutput-format.py ${multiannoFile} ${Sample} ./
 	"""
 }
