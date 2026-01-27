@@ -7,6 +7,7 @@ process VARDICT {
 		tuple val (Sample), file (sortedBam), file (sortedBamBai)
 		file (bed_file)
 		path (genome_fasta)
+		path(ind_files)
 	output:
 		tuple val (Sample), file ("${Sample}_vardict.vcf")
 	script:

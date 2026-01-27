@@ -32,9 +32,6 @@ bed_file = file("${params.bedfile}", checkIfExists: true )
 genome_fasta = file("${params.genome}", checkIfExists: true)
 ind_files = file("${params.genome_dir}/${params.ind_files}.*")
 dict_file = file("${params.genome_dir}/${params.ind_files}.dict")
-known_indels = file("${params.site1}", checkIfExists: true )
-known_snps_1 = file("${params.site2}", checkIfExists: true )
-known_snps_2 = file("${params.site3}", checkIfExists: true )
 vardict = params.vardict
 mutect2 = params.mutect2
 lofreq  = params.lofreq
@@ -65,7 +62,7 @@ workflow KDM {
 	kdm_bams_ch = FASTQ_TO_BAM(bam_ch)
 	COVERAGE(kdm_bams_ch.final_bams_ch, bed_file )
 	COVERVIEW(kdm_bams_ch.final_bams_ch, bed_file )
-	VARDICT(kdm_bams_ch.final_bams_ch, bed_file, genome_fasta ) 
+	VARDICT(kdm_bams_ch.final_bams_ch, bed_file, genome_fasta, ind_files ) 
 	ANNOVAR_VARDICT(VARDICT.out, vardict) 
 	FORMAT_VARDICT(ANNOVAR_VARDICT.out)
 	LOFREQ(kdm_bams_ch.final_bams_ch, bed_file, genome_fasta )  
