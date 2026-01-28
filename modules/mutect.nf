@@ -23,6 +23,6 @@ process FORMAT_MUTECT {
 		tuple val (Sample), file ("${Sample}_mutect.csv")
 	script:
 	"""
-	python3 ${params.formatMutect_script_path} ${multiannoFile} ${Sample} ./
+	mutectoutput-format.py ${multiannoFile} ${Sample} ./
 	"""
 }

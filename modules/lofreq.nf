@@ -26,6 +26,6 @@ process FORMAT_LOFREQ {
 		tuple val (Sample), file ("${Sample}_lofreq.csv")
 	script:
 	"""
-	python3 ${params.formatLofreq_script_path} ${multiannoFile} ${Sample} ./
+	lofreqoutput-format.py ${multiannoFile} ${Sample} ./
 	"""
 }
