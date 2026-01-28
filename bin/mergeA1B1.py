@@ -53,7 +53,7 @@ def main(args):
 
         # Full list of comparison columns to ensure they exist
         comparison_cols = [
-            'VAF', 'REF_COUNT', 'ALT_COUNT',
+            'VAF(%)', 'REF_COUNT', 'ALT_COUNT',
             'Variant Site', 'Gene.refGene', 'GeneDetail.refGene',
             'Variant Function', 'AAChange.refGene',
             'cosmic84', 'ExAC_ALL', 'ExAC_AFR', 'ExAC_AMR',
@@ -85,8 +85,8 @@ def main(args):
                         suffixes=('_1', '_2')
                     )
 
-                    if 'VAF_1' in merged_df.columns and 'VAF_2' in merged_df.columns:
-                        extracted_diff = merged_df[merged_df['VAF_1'] != merged_df['VAF_2']]
+                    if 'VAF(%)_1' in merged_df.columns and 'VAF(%)_2' in merged_df.columns:
+                        extracted_diff = merged_df
 
                         selected_columns = merge_keys.copy()
                         for col in comparison_cols:

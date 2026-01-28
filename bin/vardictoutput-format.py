@@ -13,12 +13,11 @@ if os.path.getsize(filename) != 0:
 	print(df)
 	x = df['Otherinfo']
 
-	
 	data = dict()
 	
 	data.setdefault('REF_COUNT', [])
 	data.setdefault('ALT_COUNT', [])
-	data.setdefault('VAF', [])
+	data.setdefault('VAF(%)', [])
 	
 	for row in x:
 		rowitems=row.split('\t')
@@ -28,7 +27,8 @@ if os.path.getsize(filename) != 0:
 		readslist=list(map(int,readdepth.split(',')))
 		data['REF_COUNT'].append(readslist[0])
 		data['ALT_COUNT'].append(readslist[1])
-		data['VAF'].append("{:.2%}".format(vaf))
+		vaf=float( readslist[1] / ( readslist[1] + readslist[0]) )      #AF
+		data['VAF(%)'].append(round(vaf * 100, 2))
 	
 	df1=df.iloc[:,:5]
 	df2=pd.DataFrame(data, columns=data.keys())

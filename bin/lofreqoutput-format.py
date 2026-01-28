@@ -10,29 +10,24 @@ directory = args[3]
 	
 if os.path.getsize(filename) != 0:
 	df = pd.read_csv(filename)
-	
 	x = df['Otherinfo']
-	
 	
 	data = dict()
 	
 	data.setdefault('REF_COUNT', [])
 	data.setdefault('ALT_COUNT', [])
-	data.setdefault('VAF', [])
+	data.setdefault('VAF(%)', [])
 	
 	for row in x:
 		rowitems=row.split('\t')
 		formatval=rowitems[-3].split(';')
-    
-    
-		vaf=float(formatval[1].split('=')[1])  #AF
 		dp4=formatval[3].split('=')[1]  #DP4
 		ref=float(dp4.split(',')[0]) + float(dp4.split(',')[1])  #Ref forward+reverse
 		alt=float(dp4.split(',')[2]) + float(dp4.split(',')[3])  #Alt forward+reverse
-    
 		data['REF_COUNT'].append(ref)
 		data['ALT_COUNT'].append(alt)
-		data['VAF'].append("{:.2%}".format(vaf))
+		vaf=float( alt / ( alt + ref) ) #AF
+		data['VAF(%)'].append(round(vaf * 100, 2))
 
 
 	df1=df.iloc[:,:5]
