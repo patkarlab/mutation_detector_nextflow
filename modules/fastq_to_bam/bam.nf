@@ -132,3 +132,22 @@ process INSERT_SIZE_METRICS {
 		TMP_DIR=${Sample}_tmp
 	"""
 }
+
+process ALIGNMENT {
+	publishDir "${params.outdir}/${Sample}/", mode: 'copy', pattern: '*_sortd.bam'
+	publishDir "${params.outdir}/${Sample}/", mode: 'copy', pattern: '*_sortd.bam.bai'
+	tag "${Sample}"
+	label 'process_high'
+	input:
+		tuple val(Sample), file(trim1), file(trim2)
+		path (GenFile)
+		path (GenDir)
+	output:
+		tuple val(Sample), path("${Sample}_sortd.bam"), path("${Sample}_sortd.bam.bai")
+	script:
+	"""
+	bwa mem -R "@RG\\tID:AML\\tPL:ILLUMINA\\tLB:LIB-MIPS\\tSM:${Sample}\\tPI:200" -t ${task.cpus} ${GenFile} ${trim1} ${trim2} | samtools sort -@ ${task.cpus} -o ${Sample}_sortd.bam -
+	samtools index ${Sample}_sortd.bam > ${Sample}_sortd.bam.bai
+
+	"""
+}

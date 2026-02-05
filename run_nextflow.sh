@@ -14,6 +14,6 @@
 ##for MIPS: myeloidrp_coordinates_file
 ##for DICER: use the second command mentioned below
 
-nextflow  run main.nf -entry KDM -profile docker -resume -bg
+#nextflow  run main.nf -entry KDM -profile docker -resume -bg
 
-#nextflow -c /home/pipelines/mutation_detector_nextflow/nextflow.config run main.nf -entry DICER --sequences /home/pipelines/mutation_detector_nextflow/sequences/ --input /home/pipelines/mutation_detector_nextflow/sample_list.csv -resume -bg
+nextflow -c /home/pipelines/mutation_detector_nextflow/nextflow.config run main.nf -entry DICER --sequences /home/pipelines/mutation_detector_nextflow/sequences/ --input /home/pipelines/mutation_detector_nextflow/sample_list.csv -resume -bg
