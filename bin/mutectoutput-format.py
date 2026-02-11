@@ -10,12 +10,9 @@ directory = args[3]
 
 if os.path.getsize(filename) != 0:
 	df = pd.read_csv(filename)
-
-	x = df['Otherinfo1']
-
-
+	x = df['Otherinfo']
+ 
 	data = dict()
-
 
 	data.setdefault('REF_COUNT', [])
 	data.setdefault('ALT_COUNT', [])
@@ -24,10 +21,8 @@ if os.path.getsize(filename) != 0:
 	for row in x:
 		rowitems=row.split('\t')
 		formatval=rowitems[-1].split(':')
-    
-		readdepth=formatval[1] #"AD"   
+		readdepth=formatval[1] #"AD"
 		readslist=list(map(int,readdepth.split(',')))
-
 		data['REF_COUNT'].append(readslist[0])
 		data['ALT_COUNT'].append(readslist[1])
 		vaf=float( readslist[1] / ( readslist[1] + readslist[0]) ) #AF
