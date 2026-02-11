@@ -15,7 +15,7 @@ Sequences in:${params.sequences}
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 include { FASTQ_TO_BAM; TRIM_MAPBAM } from './workflows/fastq_bam.nf'
-include { COVERAGE; COVERVIEW } from './modules/coverage/main.nf'
+include { COVERAGE } from './modules/coverage/main.nf'
 include { VARDICT } from './modules/variant_calling/vardict/main.nf'
 include { LOFREQ } from './modules/variant_calling/lofreq/main.nf'
 include { MUTECT } from './modules/variant_calling/mutect/main.nf'
@@ -72,7 +72,7 @@ workflow KDM {
 	main:
 	kdm_bams_ch = FASTQ_TO_BAM(bam_ch)
 	COVERAGE(kdm_bams_ch.final_bams_ch, bed_file )
-	COVERVIEW(kdm_bams_ch.final_bams_ch, bed_file )
+	// COVERVIEW(kdm_bams_ch.final_bams_ch, bed_file )
 	VARDICT(kdm_bams_ch.final_bams_ch, bed_file, genome_fasta, ind_files ) 
 	ANNOVAR_VARDICT(VARDICT.out, vardict) 
 	FORMAT_VARDICT(ANNOVAR_VARDICT.out)
