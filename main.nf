@@ -45,6 +45,7 @@ known_snps_1 = file("${params.site1}", checkIfExists: true )
 known_snps_2 = file("${params.site3}", checkIfExists: true )
 known_indels = file("${params.site2}", checkIfExists: true)
 minimap_genome = file("${params.genome_minimap_getitd}", checkIfExists: true )
+kdm_mutation_db = file("${params.kdm_mutation_db}", checkIfExists: true)
 
 
 /*
@@ -82,7 +83,7 @@ workflow KDM {
 	MUTECT(kdm_bams_ch.final_bams_ch, bed_file, genome_fasta, ind_files ) 
 	ANNOVAR_MUTECT(MUTECT.out, mutect2) 
 	FORMAT_MUTECT(ANNOVAR_MUTECT.out)
-	COMBINE_OUTPUT(FORMAT_VARDICT.out.join(FORMAT_MUTECT.out.join(FORMAT_LOFREQ.out)))
+	COMBINE_OUTPUT(FORMAT_VARDICT.out.join(FORMAT_MUTECT.out.join(FORMAT_LOFREQ.out)), kdm_mutation_db)
 	MERGE_CSVS(COMBINE_OUTPUT.out.join(COVERAGE.out.cov))
 	COMBINE_REPLICATES(MERGE_CSVS.out.collect())
 }

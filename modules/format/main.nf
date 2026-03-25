@@ -43,12 +43,13 @@ process COMBINE_OUTPUT {
 	tag "${Sample}"
 	input:
 		tuple val (Sample), file(vardict_csv), file(mutect_csv), file(lofreq_csv)
+		path (kdm_mutation_db)
 	output:
 		tuple val (Sample), path ("${Sample}_combined.csv")
 	script:
 	"""
 	combined_csv-format.py ${vardict_csv} ${mutect_csv} ${lofreq_csv} ./  ${Sample}
-	search_KDMmutationDB.py ${Sample}_combined.csv ./ ${Sample}
+	search_KDMmutationDB.py ${Sample}_combined.csv ./ ${Sample} ${kdm_mutation_db}
 	"""
 }
 

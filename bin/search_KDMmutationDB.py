@@ -5,12 +5,10 @@ import os, sys
 
 args = sys.argv
 
-mutDb_file='/home/pipelines/mutation_detector_nextflow/kdm_mutation_database/kdm_mutation_database.csv'
-
 csv_file = args[1]
 outPath = args[2]
 sample_name = args[3]
-
+mutDb_file= args[4]
 
 df = pd.DataFrame()
 df = pd.read_csv(csv_file)
