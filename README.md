@@ -12,7 +12,14 @@ The following parameters need to be modified in the `params` section of the `nex
 
 - *bedfile* = bedfile containing the target regions
 
-- *annovar_humandb* = Complete path to the humandb database folder for ANNOVAR (refer https://annovar.openbioinformatics.org/en/latest/user-guide/startup/ )
+- *annovar_humandb* = Complete path to the humandb database folder for [  ANNOVAR ]( https://annovar.openbioinformatics.org/en/latest/user-guide/startup/  )
+
+- *gen_ref* = gene_fullxref.txt file present the in the example folder from the annovar_db  
+
+- *site1, site2 and site3* = path to vcf files from Mills_and_1000G_gold_standard.indels, dbsnp_138 and 1000G_phase1 snps respectively
+
+- *genome_minimap_getitd* = .fa file for minimap as mentioned [ here ]( https://github.com/lh3/minimap2 )
+
 ---
 
 The list of adaptors required by fastp `TruSeq2-PE.fa` should be placed in the `./assets` folder.
