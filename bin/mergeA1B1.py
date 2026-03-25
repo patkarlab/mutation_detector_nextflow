@@ -65,7 +65,7 @@ def main(args):
         df2_variants = ensure_columns_exist(df2_variants, comparison_cols)
 
         output_file = f"{sample_id}.xlsx"
-        with pd.ExcelWriter(output_file, engine='xlsxwriter') as writer:
+        with pd.ExcelWriter(output_file) as writer:
             # Order: Variants_A → Coverage_A → Variants_B → Coverage_B
             df1_variants.to_excel(writer, sheet_name=f'Variants_{extract_id(file1)}', index=False)
             df1_coverage.to_excel(writer, sheet_name=f'Coverage_{extract_id(file1)}', index=False)

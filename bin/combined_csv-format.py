@@ -51,7 +51,7 @@ for i in range(len(df_lofreq)):
 df2 = pd.DataFrame()
 for f in files:
 	if os.path.getsize(f) != 0:
-	    df2 = df2.append(pd.read_csv(f, sep=','), ignore_index=True)
+	    df2 = pd.concat([df2, pd.read_csv(f, sep=',')], ignore_index=True)
 df1=df2.iloc[:,:-1]
 dfCaller=pd.DataFrame(dataCaller, columns=dataCaller.keys())
 
